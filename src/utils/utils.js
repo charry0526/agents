@@ -30,8 +30,8 @@ export function isName (str) {
 
 // 手机号码
 export function isPhone (mobile) {
-  // let myreg = /^[1][3,4,5,7,8][0-9]{9}$/  //手机号码验证
-  let myreg = /^[0-9]{11}$/ // 手机号码验证
+  let myreg = /^[1][3,4,5,7,8][0-9]{8}$/  //手机号码验证
+  // let myreg = /^[0-9]{11}$/ // 手机号码验证
   return myreg.test(mobile)
 }
 

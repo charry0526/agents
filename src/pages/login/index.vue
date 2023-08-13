@@ -49,7 +49,10 @@
 // import '@/assets/style/login.css'
 import * as api from '@/axios/api'
 import { isNull, isPhone } from '@/utils/utils'
-
+// 引入对称加密方法
+import { encAes, genRandKey, decAes } from '@/utils/aes'
+// 引入加密模块
+const JSEncrypt = require('encryptlong')
 export default {
   components: {},
   props: {},
@@ -60,6 +63,8 @@ export default {
       name: '',
       phone: '',
       password: '',
+      encPassword: '',
+      prKey: '',
       imgCodeTime: 0
     }
   },
@@ -84,6 +89,7 @@ export default {
       }
     },
     async tologin () {
+      console.log("phone: ",this.phone)
       // 登录
       if (isNull(this.phone) || !isPhone(this.phone)) {
         this.$message.error('请输入正确的手机号码')
@@ -94,10 +100,30 @@ export default {
         //     this.$message.error('请输入正确图形验证码')
         //     return
       } else {
+        // 通过接口获取公钥，后端有私钥进行解密
+        let PKopts = {
+          contents: this.phone
+        }
+        let pdata = await api.getPKConfig(PKopts)
+        if (pdata.status === 0) {
+          const pubKey = pdata.data
+          // 获取公钥，后用公钥对随机密钥非对称加密
+          this.publicKey = pubKey
+          // 生成随机密钥，用随机密钥对称加密加密用户名，密码
+          const randomKey = genRandKey()
+          // 密码加密
+          this.encPassword = encAes(this.password, randomKey)
+          // 前端随机密钥通过后端提供的公钥进行加密
+          this.prKey = this.creatEncry(this.publicKey, randomKey)
+        } else {
+          this.$message.error('输入信息有误，请重新登录！')
+        }
+
         let opts = {
           agentPhone: this.phone,
-          agentPwd: this.password,
-          verifyCode: this.code2
+          agentPwd: this.encPassword,
+          verifyCode: this.code2,
+          pKey: this.prKey
         }
         let data = await api.login(opts)
         if (data.status === 0) {
@@ -108,6 +134,14 @@ export default {
           this.$message.error(data.msg)
         }
       }
+    },
+    // 非对称加密方法
+    creatEncry (publicKey, param) {
+      const encryptor = new JSEncrypt.JSEncrypt()
+      // 设置公钥
+      encryptor.setPublicKey(publicKey)
+      // 加密随机密钥
+      return encryptor.encryptLong(param)
     },
     refreshImg () {
       this.adminUrl = ''

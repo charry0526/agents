@@ -107,3 +107,7 @@ export function getSiteInfo (options) {
 export function getLink (options) {
   return get('Link/getListWithIconAndUrl.action', options)
 }
+// 获取加密公钥
+export function getPKConfig (options) {
+  return post('/api/admin/getPKConfig.do', options)
+}
