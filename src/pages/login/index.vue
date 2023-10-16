@@ -89,10 +89,10 @@ export default {
       }
     },
     async tologin () {
-      console.log("phone: ",this.phone)
       // 登录
-      if (isNull(this.phone) || !isPhone(this.phone)) {
-        this.$message.error('请输入正确的手机号码')
+      // if (isNull(this.phone) || !isPhone(this.phone)) {
+      if (isNull(this.phone)) {
+        this.$message.error('请输入手机号码')
       } else if (isNull(this.password)) {
         this.$message.error('请输入密码')
         // }else if(!this.checkCode()){
